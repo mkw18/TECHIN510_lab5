@@ -83,9 +83,6 @@ m = folium.Map(location=[47.6062, -122.3321], zoom_start=12)
 folium.Marker([47.6062, -122.3321], popup='Seattle').add_to(m)
 st_folium(m, width=1200, height=600)
 
-# df = df[df['category'] == category]
-# st.write(df)
-
 # Create a multiselect box for location selection
 location = st.multiselect('Select location', options=df['location'].unique())
 
