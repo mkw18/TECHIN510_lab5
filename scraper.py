@@ -50,6 +50,48 @@ def get_detail_page():
         json.dump(links, open(URL_LIST_FILE, 'w'))
     json.dump(data, open(URL_DETAIL_FILE, 'w'))
 
+def get_geo_weather():
+    urls = json.load(open(URL_LIST_FILE, 'r'))
+    data = json.load(open(URL_DETAIL_FILE, 'r'))
+    err_url = []
+    err_data = []
+    for url, row in zip(urls, data):
+        res = requests.get(f"https://nominatim.openstreetmap.org/search.php?q={row['location']} seattle&format=jsonv2")
+        if len(res.json()) == 0:
+            res = requests.get(f"https://nominatim.openstreetmap.org/search.php?q={row['location']}&format=jsonv2")
+        location = res.json()
+        if len(location) == 0:
+            print(f'Location not found: {url}')
+            err_url.append(url)
+            err_data.append(row.copy())
+            continue
+        lat, lon = location[0]['lat'], location[0]['lon']
+        row['lat'] = lat
+        row['lon'] = lon
+        res = requests.get(f"https://api.weather.gov/points/{lat},{lon}")
+        weather_point = res.json()
+        try:
+            forecast_url = weather_point['properties']['forecast']
+            forecast_url_grid = weather_point['properties']['forecastGridData']
+            res = requests.get(forecast_url)
+            row['condition'] = res.json()['properties']['periods'][0]['shortForecast']
+            res = requests.get(forecast_url_grid)
+            row["minTemperature"] = res.json()['properties']["minTemperature"]["values"][0]["value"]
+            row["maxTemperature"] = res.json()['properties']["maxTemperature"]["values"][0]["value"]
+            row["windChill"] = res.json()['properties']["windChill"]["values"][0]["value"]
+        except:
+            print(f'Weather not found: {url}, {row["venue"]}')
+            err_url.append(url)
+            err_data.append(row.copy())
+            # continue
+    if len(err_url) > 0:
+        for url, row in zip(err_url, err_data):
+            urls.remove(url)
+            data.remove(row)
+        json.dump(urls, open(URL_LIST_FILE, 'w'), indent=2)
+    json.dump(data, open(URL_DETAIL_FILE, 'w'), indent=2)
+        
+
 def insert_to_pg():
     q = '''
     CREATE TABLE IF NOT EXISTS events (
@@ -58,7 +100,13 @@ def insert_to_pg():
         date TIMESTAMP WITH TIME ZONE,
         venue TEXT,
         category TEXT,
-        location TEXT
+        location TEXT,
+        latitude FLOAT,
+        longitude FLOAT,
+        condition TEXT,
+        mintemperature FLOAT,
+        maxtemperature FLOAT,
+        windchill FLOAT
     );
     '''
     conn = get_db_conn()
@@ -69,13 +117,40 @@ def insert_to_pg():
     data = json.load(open(URL_DETAIL_FILE, 'r'))
     for url, row in zip(urls, data):
         q = '''
-        INSERT INTO events (url, title, date, venue, category, location)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO 
+        events (
+            url, 
+            title, 
+            date, 
+            venue, 
+            category, 
+            location, 
+            latitude, 
+            longitude, 
+            condition, 
+            mintemperature, 
+            maxtemperature, 
+            windchill
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (url) DO NOTHING;
         '''
-        cur.execute(q, (url, row['title'], row['date'], row['venue'], row['category'], row['location']))
+        cur.execute(q, (
+            url, 
+            row['title'], 
+            row['date'], 
+            row['venue'], 
+            row['category'], 
+            row['location'], 
+            row['lat'], 
+            row['lon'], 
+            row['condition'], 
+            row['minTemperature'], 
+            row['maxTemperature'], 
+            row['windChill']
+            ))
 
 if __name__ == '__main__':
-    # list_links()
+    list_links()
     get_detail_page()
+    get_geo_weather()
     insert_to_pg()
