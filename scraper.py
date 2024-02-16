@@ -27,6 +27,7 @@ def list_links():
 def get_detail_page():
     links = json.load(open(URL_LIST_FILE, 'r'))
     data = []
+    err = []
     for link in links:
         try:
             row = {}
@@ -40,8 +41,13 @@ def get_detail_page():
             row['location'] = metas[1]
             data.append(row)
         except IndexError as e:
+            err.append(link)
             print(f'Error: {e}')
             print(f'Link: {link}')
+    if len(err) > 0:
+        for link in err:
+            links.remove(link)
+        json.dump(links, open(URL_LIST_FILE, 'w'))
     json.dump(data, open(URL_DETAIL_FILE, 'w'))
 
 def insert_to_pg():
@@ -70,6 +76,6 @@ def insert_to_pg():
         cur.execute(q, (url, row['title'], row['date'], row['venue'], row['category'], row['location']))
 
 if __name__ == '__main__':
-    list_links()
+    # list_links()
     get_detail_page()
     insert_to_pg()
