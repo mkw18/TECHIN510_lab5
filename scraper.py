@@ -90,7 +90,7 @@ def get_geo_weather():
             data.remove(row)
         json.dump(urls, open(URL_LIST_FILE, 'w'), indent=2)
     json.dump(data, open(URL_DETAIL_FILE, 'w'), indent=2)
-        
+
 
 def insert_to_pg():
     q = '''
