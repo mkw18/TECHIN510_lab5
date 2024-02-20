@@ -1,6 +1,6 @@
-psycopg2-binary
-requests
-python-dotenv
-streamlit-folium
-altair
-sqlalchemy
+psycopg2-binary==2.9.9
+requests==2.31.0
+python-dotenv==0.21.0
+streamlit-folium==0.18.0
+altair==4.2.2
+SQLAlchemy==0.26.1
