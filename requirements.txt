@@ -7,4 +7,3 @@ python-dotenv==0.21.0
 streamlit-folium==0.18.0
 altair==4.2.2
 sqlalchemy==2.0.27
-regex==2022.7.9
