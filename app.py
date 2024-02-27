@@ -35,36 +35,36 @@ event_location_counts = df['location'].value_counts().head(10).reset_index()  # 
 
 # Most Common Categories of Events
 chart1 = alt.Chart(event_category_counts).mark_bar().encode(
-    x='category:Q',
-    y=alt.Y('index:N', sort='-x', title='Event Category'),
-    tooltip=['index', 'category']
+    x='count:Q',
+    y=alt.Y('category:N', sort='-x', title='Event Category'),
+    tooltip=['count', 'category']
 ).properties(
     title='Most Common Categories of Events'
 )
 
 # Events Distribution by Month
 chart2 = alt.Chart(events_per_month).mark_bar().encode(
-    x='index:O',  # Treat month as ordinal to keep order
-    y='month:Q',
-    tooltip=['index', 'month']
+    x='month:O',  # Treat month as ordinal to keep order
+    y='count:Q',
+    tooltip=['count', 'month']
 ).properties(
     title='Events Distribution by Month'
 )
 
 # Events Distribution by Day of the Week
 chart3 = alt.Chart(events_per_day).mark_bar().encode(
-    x='day_of_week:Q',
-    y=alt.Y('index:N', sort='-x', title='Day of the Week'),
-    tooltip=['index', 'day_of_week']
+    x='count:Q',
+    y=alt.Y('day_of_week:N', sort='-x', title='Day of the Week'),
+    tooltip=['count', 'day_of_week']
 ).properties(
     title='Events Distribution by Day of the Week'
 )
 
 # Top 10 Common Locations for Events
 chart4 = alt.Chart(event_location_counts).mark_bar().encode(
-    x='location:Q',
-    y=alt.Y('index:N', sort='-x', title='Location'),
-    tooltip=['index', 'location']
+    x='count:Q',
+    y=alt.Y('location:N', sort='-x', title='Location'),
+    tooltip=['count', 'location']
 ).properties(
     title='Top 10 Common Locations for Events'
 )
